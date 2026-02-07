@@ -43,7 +43,7 @@ function App() {
     const [todos, setTodos] = useState(null)
     const todoItems = useSelector(state => state.todoReducer)
     useEffect(
-        ()=>{
+        () => {
             setTodos(todoItems)
         }, [todoItems]
     )
@@ -59,14 +59,20 @@ function App() {
                         {
                             todos != null
                                 ?
-                                todos.map(
-                                    todo => {
-                                        return (
-                                            <li>
-                                                <TodoItem id={todo.id} todoNameRef={todo.name} todoCreatedAt={todo.createdAt} todoDoneRefAt={todo.doneAt} todoTarget={todo.target} />
-                                            </li>
+                                (
+                                    todos.length < 1
+                                        ?
+                                        "Belum ada yang harus dilakukan!"
+                                        :
+                                        todos.map(
+                                            todo => {
+                                                return (
+                                                    <li>
+                                                        <TodoItem id={todo.id} todoNameRef={todo.name} todoCreatedAt={todo.createdAt} todoDoneRefAt={todo.doneAt} todoTarget={todo.target} />
+                                                    </li>
+                                                )
+                                            }
                                         )
-                                    }
                                 )
                                 :
                                 ""
