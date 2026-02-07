@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react"
 import moment from "moment"
 import { useDispatch, useSelector } from "react-redux"
 import { useForm } from "react-hook-form"
-import { addTodoItem } from "./redux/reducers/todoReducer"
+import { addTodoItem, removeTodoItem } from "./redux/reducers/todoReducer"
 
 const TodoItem = ({ id, todoName, todoCreatedAt, todoDoneAt, todoTarget }) => {
     const checkboxRef = React.useRef()
     const todoNameRef = React.useRef()
-    const todoDoneRef = React.useRef()
+    const todoDoneRef = React.useRef()    
+    const dispatcher = useDispatch()
+    const todoItem = useSelector(state=>state.todoReducer)
     function toggleStatus() {
         if (checkboxRef.current.checked) {
             todoNameRef.current.classList.add('line-through')
@@ -17,6 +19,7 @@ const TodoItem = ({ id, todoName, todoCreatedAt, todoDoneAt, todoTarget }) => {
             todoDoneRef.current.textContent = ''
         }
     }
+
     return (
         <label>
             <div className="flex gap-4 flex-1">
@@ -36,24 +39,22 @@ const TodoItem = ({ id, todoName, todoCreatedAt, todoDoneAt, todoTarget }) => {
                     <span className="font-bold w-50">Selesai pada:</span>
                     <span ref={todoDoneRef} className="flex">{todoDoneAt}</span>
                 </div>
+                <div className="flex">
+                    <span className="font-bold w-50">Action</span>
+                    <button className="bg-red-400 border border-red-800 text-white rounded w-40 cursor-pointer" onClick={()=>{dispatcher(removeTodoItem({id}))}}>Delete</button>
+                </div>
             </div>
         </label>
     )
 }
 
 const AddToDoForm = () => {
-    const [todos, setTodos] = useState(null)
-    const todoItems = useSelector(state => state.todoReducer)
+    const {todoItems} = useSelector(state => state.todoReducer)
     const dispatcher = useDispatch()
-    useEffect(
-        () => {
-            setTodos(todoItems)
-        }, [todoItems]
-    )
     const { register, handleSubmit } = useForm()
     function addTodoFormHandler(data) {
         const todo = {
-            id: todos.length,
+            id: todoItems.length,
             name: data.todoName,
             target: moment(data.todoTarget).format('DD MMMM YYYY HH:mm'),
             createdAt: moment().format('DD MMMM YYYY HH:mm'),
@@ -79,13 +80,8 @@ const AddToDoForm = () => {
 }
 
 function App() {
-    const [todos, setTodos] = useState(null)
-    const todoItems = useSelector(state => state.todoReducer)
-    useEffect(
-        () => {
-            setTodos(todoItems)
-        }, [todoItems]
-    )
+    const {todoItems} = useSelector(state => state.todoReducer)
+    console.log(todoItems)
     return (
         <div className="max-w-4xl w-full p-4 mx-auto my-4 flex flex-col gap-4">
             <section className="flex flex-col gap-4">
@@ -97,14 +93,14 @@ function App() {
                     <h1 className="w-full text-xl font-bold">To Do:</h1>
                     <ul className="w-full flex flex-col gap-4">
                         {
-                            todos != null
+                            todoItems != null
                                 ?
                                 (
-                                    todos.length < 1
+                                    todoItems.length < 1
                                         ?
                                         "Belum ada yang harus dilakukan!"
                                         :
-                                        todos.map(
+                                        todoItems.map(
                                             (todo, index) => {
                                                 return (
                                                     <li key={"todo-items-"+index}>
