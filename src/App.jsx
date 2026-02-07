@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react"
 import moment from "moment"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { useForm } from "react-hook-form"
+import { addTodoItem } from "./redux/reducers/todoReducer"
 
 const TodoItem = ({ id, todoName, todoCreatedAt, todoDoneAt, todoTarget }) => {
     const checkboxRef = React.useRef()
@@ -19,7 +20,7 @@ const TodoItem = ({ id, todoName, todoCreatedAt, todoDoneAt, todoTarget }) => {
     return (
         <label>
             <div className="flex gap-4 flex-1">
-                <input ref={checkboxRef} type="checkboxRef" id="checkboxRef" name="todo" className="w-7 h-7" onChange={toggleStatus} />
+                <input ref={checkboxRef} type="checkbox" id="checkboxRef" name="todo" className="w-7 h-7" onChange={toggleStatus} />
                 <span ref={todoNameRef}>{todoName}</span>
             </div>
             <div className="flex flex-col pl-16 flex-1">
@@ -43,13 +44,14 @@ const TodoItem = ({ id, todoName, todoCreatedAt, todoDoneAt, todoTarget }) => {
 const AddToDoForm = () => {
     const [todos, setTodos] = useState(null)
     const todoItems = useSelector(state => state.todoReducer)
+    const dispatcher = useDispatch()
     useEffect(
         () => {
             setTodos(todoItems)
         }, [todoItems]
     )
     const { register, handleSubmit } = useForm()
-    function addTodo(data) {
+    function addTodoFormHandler(data) {
         const todo = {
             id: todos.length,
             name: data.todoName,
@@ -57,18 +59,18 @@ const AddToDoForm = () => {
             createdAt: moment().format('DD MMMM YYYY HH:mm'),
             doneAt: ""
         }
-        console.log(todo)
+        dispatcher(addTodoItem(todo))
     }
     return (
-        <form className="rounded bg-white shadow p-4 flex justify-center gap-4" onSubmit={handleSubmit(addTodo)}>
+        <form className="rounded bg-white shadow p-4 flex justify-center gap-4" onSubmit={handleSubmit(addTodoFormHandler)}>
             <div className="flex justify-center items-center gap-4">
                 <div className="flex-1">
                     <label htmlFor="todoName">To Do Name :</label>
-                    <input type="text" {...register("todoName")} id="todoName" className="outline-none border-b border-b-slate-400" placeholder="I need to do ..." />
+                    <input type="text" {...register("todoName")} id="todoName" className="outline-none border-b border-b-slate-400" placeholder="I need to do ..." required/>
                 </div>
                 <div className="flex-1">
                     <label htmlFor="todoTarget">When it should be done :</label>
-                    <input type="datetime-local" {...register("todoTarget")} id="todoTarget" className="border-b border-b-slate-400" />
+                    <input type="datetime-local" {...register("todoTarget")} id="todoTarget" className="border-b border-b-slate-400" required/>
                 </div>
                 <button className="bg-slate-800 hover:bg-slate-400 flex-1 rounded py-4 text-white cursor-pointer">Submit</button>
             </div>
@@ -103,10 +105,10 @@ function App() {
                                         "Belum ada yang harus dilakukan!"
                                         :
                                         todos.map(
-                                            todo => {
+                                            (todo, index) => {
                                                 return (
-                                                    <li>
-                                                        <TodoItem id={todo.id} todoNameRef={todo.name} todoCreatedAt={todo.createdAt} todoDoneRefAt={todo.doneAt} todoTarget={todo.target} />
+                                                    <li key={"todo-items-"+index}>
+                                                        <TodoItem id={todo.id} todoName={todo.name} todoCreatedAt={todo.createdAt} todoDoneRefAt={todo.doneAt} todoTarget={todo.target} />
                                                     </li>
                                                 )
                                             }
