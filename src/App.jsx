@@ -81,7 +81,6 @@ const AddToDoForm = () => {
 
 function App() {
     const { todoItems } = useSelector(state => state.todoReducer)
-    console.log(todoItems)
     return (
         <div className="max-w-4xl w-full p-4 mx-auto my-4 flex flex-col gap-4">
             <section className="flex flex-col gap-4">
