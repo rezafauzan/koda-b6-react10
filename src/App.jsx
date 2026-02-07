@@ -1,103 +1,91 @@
-import { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import moment from "moment"
+import { useDispatch, useSelector } from "react-redux"
 import { useForm } from "react-hook-form"
+import { addTodoItem, removeTodoItem } from "./redux/reducers/todoReducer"
 
+const TodoItem = ({ id, todoName, todoCreatedAt, todoDoneAt, todoTarget }) => {
+    const checkboxRef = React.useRef()
+    const todoNameRef = React.useRef()
+    const todoDoneRef = React.useRef()    
+    const dispatcher = useDispatch()
+    const todoItem = useSelector(state=>state.todoReducer)
+    function toggleStatus() {
+        if (checkboxRef.current.checked) {
+            todoNameRef.current.classList.add('line-through')
+            todoDoneRef.current.textContent = moment().format('DD-MM-YYYY hh:mm:ss')
+        } else {
+            todoNameRef.current.classList.remove('line-through')
+            todoDoneRef.current.textContent = ''
+        }
+    }
 
-const TodoItem = ({ todos = null, setter = () => { } }) => {
     return (
-        <ul>
-            {
-                todos != null ?
-                    todos.map(
-                        (todo, index) => {
-                            const checkbox = useRef()
-                            const todoName = useRef()
-                            const todoCreated = useRef()
-                            const todoDeadline = useRef()
-                            const todoDone = useRef()
-                            function toggleStatus() {
-                                if (checkbox.current.checked) {
-                                    todoName.current.classList.add('line-through')
-                                    todoDone.current.textContent = moment().format('DD MMMM YYYY hh:mm:ss')
-                                    if (todos[index].done === "") {
-                                        todos[index].done = moment().format('DD MMMM YYYY hh:mm:ss')
-                                        setter(todos)
-                                        window.localStorage.setItem('todos', JSON.stringify(todos))
-                                    }
-                                } else {
-                                    todoName.current.classList.remove('line-through')
-                                    todoDone.current.textContent = ''
-                                    if (todos[index].done.length > 0) {
-                                        todos[index].done = ''
-                                        setter(todos)
-                                        window.localStorage.setItem('todos', JSON.stringify(todos))
-                                    }
-                                }
-                            }
-                            return (
-                                <label key={todo.id}>
-                                    <div className="flex gap-4 flex-1">
-                                        <input ref={checkbox} type="checkbox" id="checkbox" name="todo" className="w-7 h-7" onChange={toggleStatus} checked={todos[index].done.length > 0 ? true : false} />
-                                        <span ref={todoName}>{todo.name}</span>
-                                    </div>
-                                    <div className="flex flex-col pl-16 flex-1">
-                                        <div className="flex">
-                                            <span className="font-bold w-50">Tanggal dibuat:</span>
-                                            <span ref={todoCreated} className="flex">{todo.createdAt}</span>
-                                        </div>
-                                        <div className="flex">
-                                            <span className="font-bold w-50">Target selesai:</span>
-                                            <span ref={todoDeadline} className="flex">{todo.target}</span>
-                                        </div>
-                                        <div className="flex">
-                                            <span className="font-bold w-50">Selesai pada:</span>
-                                            <span ref={todoDone} className="flex">{todos[index].done.length > 0 ? todos[index].done : "-"}</span>
-                                        </div>
-                                    </div>
-                                </label>
-                            )
-                        }
-                    )
-                    :
-                    "Loading... Atau Masih Kosong"
-            }
-        </ul>
+        <label>
+            <div className="flex gap-4 flex-1">
+                <input ref={checkboxRef} type="checkbox" id="checkboxRef" name="todo" className="w-7 h-7" onChange={toggleStatus} />
+                <span ref={todoNameRef}>{todoName}</span>
+            </div>
+            <div className="flex flex-col pl-16 flex-1">
+                <div className="flex">
+                    <span className="font-bold w-50">Tanggal dibuat:</span>
+                    <span className="flex">{todoCreatedAt}</span>
+                </div>
+                <div className="flex">
+                    <span className="font-bold w-50">Target selesai:</span>
+                    <span className="flex">{todoTarget}</span>
+                </div>
+                <div className="flex">
+                    <span className="font-bold w-50">Selesai pada:</span>
+                    <span ref={todoDoneRef} className="flex">{todoDoneAt}</span>
+                </div>
+                <div className="flex">
+                    <span className="font-bold w-50">Action</span>
+                    <button className="bg-red-400 border border-red-800 text-white rounded w-40 cursor-pointer" onClick={()=>{dispatcher(removeTodoItem({id}))}}>Delete</button>
+                </div>
+            </div>
+        </label>
+    )
+}
+
+const AddToDoForm = () => {
+    const {todoItems} = useSelector(state => state.todoReducer)
+    const dispatcher = useDispatch()
+    const { register, handleSubmit } = useForm()
+    function addTodoFormHandler(data) {
+        const todo = {
+            id: todoItems.length,
+            name: data.todoName,
+            target: moment(data.todoTarget).format('DD MMMM YYYY HH:mm'),
+            createdAt: moment().format('DD MMMM YYYY HH:mm'),
+            doneAt: ""
+        }
+        dispatcher(addTodoItem(todo))
+    }
+    return (
+        <form className="rounded bg-white shadow p-4 flex justify-center gap-4" onSubmit={handleSubmit(addTodoFormHandler)}>
+            <div className="flex justify-center items-center gap-4">
+                <div className="flex-1">
+                    <label htmlFor="todoName">To Do Name :</label>
+                    <input type="text" {...register("todoName")} id="todoName" className="outline-none border-b border-b-slate-400" placeholder="I need to do ..." required/>
+                </div>
+                <div className="flex-1">
+                    <label htmlFor="todoTarget">When it should be done :</label>
+                    <input type="datetime-local" {...register("todoTarget")} id="todoTarget" className="border-b border-b-slate-400" required/>
+                </div>
+                <button className="bg-slate-800 hover:bg-slate-400 flex-1 rounded py-4 text-white cursor-pointer">Submit</button>
+            </div>
+        </form>
     )
 }
 
 function App() {
-    const { register, handleSubmit } = useForm()
-    const [todos, setTodos] = useState(null)
-    useEffect(
-        () => {
-            setTodos(JSON.parse(window.localStorage.getItem('todos')))
-        }, []
-    )
-    function addToDo(data) {
-        if (todos != null) {
-            const currentData = todos
-            data.id = todos.length + 1
-            data.createdAt = moment().format("DD MMMM YYYY")
-            data.target = moment(data.target, "DD MMMM YYYY").format("DD MMMM YYYY")
-            data.done = ''
-            currentData.push(data)
-            setTodos(currentData)
-            window.localStorage.setItem('todos', JSON.stringify(currentData))
-        } else {
-            const todo = []
-            data.id = 1
-            data.createdAt = moment().format("DD MMMM YYYY")
-            data.target = moment(data.target, "DD MMMM YYYY").format("DD MMMM YYYY")
-            data.done = ''
-            todo.push(data)
-            setTodos(todo)
-            window.localStorage.setItem('todos', JSON.stringify(todo))
-        }
-    }
+    const {todoItems} = useSelector(state => state.todoReducer)
+    console.log(todoItems)
     return (
-        <section>
-            <div className="container w-3xl p-4 mx-auto my-4 flex flex-col gap-4">
-                <div className="section-header rounded bg-white shadow p-4 flex flex-col items-center gap-4">
+        <div className="max-w-4xl w-full p-4 mx-auto my-4 flex flex-col gap-4">
+            <section className="flex flex-col gap-4">
+                <div className="section-header rounded bg-white shadow p-4 flex justify-center items-center">
                     <h1 className="text-xl font-bold">ToDo List React App</h1>
                     <form className="flex justify-center items-center gap-4" onSubmit={handleSubmit(addToDo)}>
                         <label htmlFor="name" className="flex flex-col gap-4 border p-4 rounded">
@@ -111,16 +99,35 @@ function App() {
                         <button type="submit" className="bg-black h-10 flex flex-col justify-center items-center p-4 rounded text-white">Add todo</button>
                     </form>
                 </div>
+                <AddToDoForm />
                 <div className="section-body rounded bg-white shadow p-4 flex flex-col justify-center items-center gap-4">
                     <h1 className="w-full text-xl font-bold">To Do:</h1>
                     <ul className="w-full flex flex-col gap-4">
-                        <li>
-                            <TodoItem todos={todos} setter={setTodos} />
-                        </li>
+                        {
+                            todoItems != null
+                                ?
+                                (
+                                    todoItems.length < 1
+                                        ?
+                                        "Belum ada yang harus dilakukan!"
+                                        :
+                                        todoItems.map(
+                                            (todo, index) => {
+                                                return (
+                                                    <li key={"todo-items-"+index}>
+                                                        <TodoItem id={todo.id} todoName={todo.name} todoCreatedAt={todo.createdAt} todoDoneRefAt={todo.doneAt} todoTarget={todo.target} />
+                                                    </li>
+                                                )
+                                            }
+                                        )
+                                )
+                                :
+                                ""
+                        }
                     </ul>
                 </div>
-            </div>
-        </section>
+            </section >
+        </div>
     )
 }
 
