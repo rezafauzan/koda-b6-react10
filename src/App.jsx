@@ -7,9 +7,9 @@ import { addTodoItem, removeTodoItem } from "./redux/reducers/todoReducer"
 const TodoItem = ({ id, todoName, todoCreatedAt, todoDoneAt, todoTarget }) => {
     const checkboxRef = React.useRef()
     const todoNameRef = React.useRef()
-    const todoDoneRef = React.useRef()    
+    const todoDoneRef = React.useRef()
     const dispatcher = useDispatch()
-    const todoItem = useSelector(state=>state.todoReducer)
+    const todoItem = useSelector(state => state.todoReducer)
     function toggleStatus() {
         if (checkboxRef.current.checked) {
             todoNameRef.current.classList.add('line-through')
@@ -41,7 +41,7 @@ const TodoItem = ({ id, todoName, todoCreatedAt, todoDoneAt, todoTarget }) => {
                 </div>
                 <div className="flex">
                     <span className="font-bold w-50">Action</span>
-                    <button className="bg-red-400 border border-red-800 text-white rounded w-40 cursor-pointer" onClick={()=>{dispatcher(removeTodoItem({id}))}}>Delete</button>
+                    <button className="bg-red-400 border border-red-800 text-white rounded w-40 cursor-pointer" onClick={() => { dispatcher(removeTodoItem({ id })) }}>Delete</button>
                 </div>
             </div>
         </label>
@@ -49,7 +49,7 @@ const TodoItem = ({ id, todoName, todoCreatedAt, todoDoneAt, todoTarget }) => {
 }
 
 const AddToDoForm = () => {
-    const {todoItems} = useSelector(state => state.todoReducer)
+    const { todoItems } = useSelector(state => state.todoReducer)
     const dispatcher = useDispatch()
     const { register, handleSubmit } = useForm()
     function addTodoFormHandler(data) {
@@ -67,11 +67,11 @@ const AddToDoForm = () => {
             <div className="flex justify-center items-center gap-4">
                 <div className="flex-1">
                     <label htmlFor="todoName">To Do Name :</label>
-                    <input type="text" {...register("todoName")} id="todoName" className="outline-none border-b border-b-slate-400" placeholder="I need to do ..." required/>
+                    <input type="text" {...register("todoName")} id="todoName" className="outline-none border-b border-b-slate-400" placeholder="I need to do ..." required />
                 </div>
                 <div className="flex-1">
                     <label htmlFor="todoTarget">When it should be done :</label>
-                    <input type="datetime-local" {...register("todoTarget")} id="todoTarget" className="border-b border-b-slate-400" required/>
+                    <input type="datetime-local" {...register("todoTarget")} id="todoTarget" className="border-b border-b-slate-400" required />
                 </div>
                 <button className="bg-slate-800 hover:bg-slate-400 flex-1 rounded py-4 text-white cursor-pointer">Submit</button>
             </div>
@@ -80,24 +80,13 @@ const AddToDoForm = () => {
 }
 
 function App() {
-    const {todoItems} = useSelector(state => state.todoReducer)
+    const { todoItems } = useSelector(state => state.todoReducer)
     console.log(todoItems)
     return (
         <div className="max-w-4xl w-full p-4 mx-auto my-4 flex flex-col gap-4">
             <section className="flex flex-col gap-4">
                 <div className="section-header rounded bg-white shadow p-4 flex justify-center items-center">
                     <h1 className="text-xl font-bold">ToDo List React App</h1>
-                    <form className="flex justify-center items-center gap-4" onSubmit={handleSubmit(addToDo)}>
-                        <label htmlFor="name" className="flex flex-col gap-4 border p-4 rounded">
-                            Todo
-                            <input type="text" {...register("name")} id="name" className="outline-0 border-b" placeholder="Add todo name" />
-                        </label>
-                        <label htmlFor="target" className="flex flex-col gap-4 border p-4 rounded">
-                            When Todo Target Done
-                            <input type="date" {...register("target")} id="target" className="outline-0 border-b" placeholder="08 february 2026" />
-                        </label>
-                        <button type="submit" className="bg-black h-10 flex flex-col justify-center items-center p-4 rounded text-white">Add todo</button>
-                    </form>
                 </div>
                 <AddToDoForm />
                 <div className="section-body rounded bg-white shadow p-4 flex flex-col justify-center items-center gap-4">
@@ -114,7 +103,7 @@ function App() {
                                         todoItems.map(
                                             (todo, index) => {
                                                 return (
-                                                    <li key={"todo-items-"+index}>
+                                                    <li key={"todo-items-" + index}>
                                                         <TodoItem id={todo.id} todoName={todo.name} todoCreatedAt={todo.createdAt} todoDoneRefAt={todo.doneAt} todoTarget={todo.target} />
                                                     </li>
                                                 )
